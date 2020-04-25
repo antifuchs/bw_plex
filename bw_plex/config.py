@@ -57,6 +57,7 @@ theme_source = option('all', 'tvtunes', 'plex', 'youtube', default='all')
 words = list(default=list('previously on', 'last season', 'last episode'))
 create_edl = boolean(default=False)
 edl_action_type = integer(default=3)
+edl_write_end_markers = boolean(default=False)
 create_chapters = boolean(default=False)
 
 [movie]
@@ -69,6 +70,7 @@ process_recently_added = boolean(default=False)
 process_deleted = boolean(default=False)
 create_edl = boolean(default=False)
 edl_action_type = integer(default=3)
+edl_write_end_markers = boolean(default=False)
 create_chapters = boolean(default=False)
 
 [hashing]

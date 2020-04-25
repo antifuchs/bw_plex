@@ -239,9 +239,9 @@ def process_to_db(media, theme=None, vid=None, start=None, end=None, ffmpeg_end=
                 LOG.debug('Added %s to media.db', name)
 
             if CONFIG['movie']['create_chapters'] and media.TYPE == 'movie':
-                edl.write_chapters_to_file(check_file_access(media), edl.db_to_edl(p))
+                edl.write_chapters_to_file(check_file_access(media), edl.db_to_edl(p, end_markers=CONFIG['movie']['edl_write_end_markers']))
             elif CONFIG['tv']['create_chapters'] and media.TYPE == 'episode':
-                edl.write_chapters_to_file(check_file_access(media), edl.db_to_edl(p))
+                edl.write_chapters_to_file(check_file_access(media), edl.db_to_edl(p, end_markers=CONFIG['tv']['edl_write_end_markers']))
 
         #if media.TYPE == 'episode':
         #    try:
@@ -541,7 +541,8 @@ def ffmpeg_process(name, trim, dev, da, dv, pix_th, au_db):  # pragma: no cover
 @click.option('-t', default='scene marker', type=click.Choice(['cut', 'scene marker', 'mute', 'commercial break']),
               help='What type of edl is this')
 @click.option('-sp', '--save_path', default=None)
-def create_edl_from_db(t, save_path):  # pragma: no cover
+@click.option('-e', '--end_markers/--no_end_markers', default=False, help='Add end markers for chapters')
+def create_edl_from_db(t, save_path, end_markers):  # pragma: no cover
     with session_scope() as se:
         db_items = se.query(Processed).all()
         for item in db_items:
@@ -552,7 +553,7 @@ def create_edl_from_db(t, save_path):  # pragma: no cover
                 loc = item.location  # handle remapping?
 
             try:
-                t = edl.write_edl(loc, edl.db_to_edl(item, edl.TYPES[t]))
+                t = edl.write_edl(loc, edl.db_to_edl(item, edl.TYPES[t], end_markers))
                 click.echo('Wrote %s' % t)
             except:
                 LOG.exception('Failed to write edl.')
@@ -929,7 +930,7 @@ def client_action(offset=None, sessionkey=None, action='jump'):  # pragma: no co
     # as this is given to client_action as a parameter.
     called = time.time()
     LOG.info('Called client_action with %s %s %s %s', offset, to_time(offset), sessionkey, action)
-    
+
     @log_exception
     def proxy_on_fail(func):
 
